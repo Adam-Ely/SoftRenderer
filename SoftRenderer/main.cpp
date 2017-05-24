@@ -29,11 +29,16 @@ SDL_Window* gWindow = NULL;
 
 SDL_Renderer* gRenderer = NULL;
 
-Vec3 left = { -1.0f, 0.57733f, 2.5f };
-Vec3 right = { 1.0f, 0.57733f, 2.5f };
-Vec3 top = { 0.0f, -1.15467f, 2.5f };
+Vec3 left = { -1.0f, 0.57733f, 2.0f };
+Vec3 right = { 1.0f, 0.57733f, 2.0f };
+Vec3 top = { 0.0f, -1.15467f, 2.0f };
 
-Vec3 origin = { 0.0f, 0.0f, 2.5f };
+Vec3 origin = { 0.0f, 0.0f, 2.0f };
+
+Vec3 sqTL = { -1.0f, 1.0f, 1.0f };
+Vec3 sqTR = { 1.0f, 1.0f, 1.0f };
+Vec3 sqBL = { -1.0f, -1.0f, 1.0f };
+Vec3 sqBR = { 1.0f, -1.0f, 1.0f };
 
 Vec3 rotatedLeft = left;
 Vec3 rotatedRight = right;
@@ -143,6 +148,21 @@ int main( int argc, char* args[] )
 				renderTop = screenspaceTransform(&renderTop);
 
 				drawTriangle(&renderLeft, &renderRight, &renderTop);
+
+				Vec3 renderSqTL = perspectiveTransform(&sqTL);
+				Vec3 renderSqTR = perspectiveTransform(&sqTR);
+				Vec3 renderSqBR = perspectiveTransform(&sqBR);
+				Vec3 renderSqBL = perspectiveTransform(&sqBL);
+
+				renderSqTL = screenspaceTransform(&renderSqTL);
+				renderSqTR = screenspaceTransform(&renderSqTR);
+				renderSqBR = screenspaceTransform(&renderSqBR);
+				renderSqBL = screenspaceTransform(&renderSqBL);
+
+				drawLine((int)renderSqTL.x, (int)renderSqTL.y, (int)renderSqTR.x, (int)renderSqTR.y);
+				drawLine((int)renderSqTR.x, (int)renderSqTR.y, (int)renderSqBR.x, (int)renderSqBR.y);
+				drawLine((int)renderSqBR.x, (int)renderSqBR.y, (int)renderSqBL.x, (int)renderSqBL.y);
+				drawLine((int)renderSqBL.x, (int)renderSqBL.y, (int)renderSqTL.x, (int)renderSqTL.y);
 
 				/*drawLine(319, 239, 0, 0);
 				drawLine(319, 239, 159, 0);
