@@ -2,7 +2,12 @@
 #include <algorithm>
 #include "DrawWrapper.h"
 
-void draw2DPoint(Vec3 *point)
+void drawPoint(int x, int y)
+{
+	myDraw::drawPoint(x, y);
+	return;
+}
+void drawPoint(Vec3 *point)
 {
 	myDraw::drawPoint((int)round(point->x), (int)round(point->y));
 	return;
