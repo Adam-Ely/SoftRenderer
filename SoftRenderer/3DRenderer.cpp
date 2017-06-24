@@ -41,7 +41,7 @@ void Renderer::frustumCullVerts()
 {
 	for (auto it = std::begin(vertsToRender); it != std::end(vertsToRender); ++it)
 	{
-		if (isInsideFrustum(&(*it)))//address of the Vec3 pointed to by the pointer (would look a lot nicer if I just used a for loop)
+		if (isInsideFrustum(&(*it)))//address of the Vec3 pointed to by the iterator (would look a lot nicer if I just used a for loop)
 		{
 			drawList.push_back(*it);
 		}
@@ -51,7 +51,7 @@ void Renderer::rotateWorldToCamera()
 {
 	for (auto it = std::begin(drawList); it != std::end(drawList); ++it)
 	{
-		Vec3::dotRotate(&(*it), &sineTheta, &cosineTheta, &cameraPosition);
+		Vec3::dotRotate(&(*it), &inverseSineTheta, &inverseCosineTheta, &cameraPosition);
 	}
 }
 void Renderer::screenspaceTransformWorld()
@@ -90,7 +90,7 @@ void Renderer::setFrustum()
 
 	Vec3::rotY(&frustumLeftSide, - (halfPi - halfHorizontalFOV), &cameraPosition);
 	Vec3::rotY(&frustumRightSide,  halfPi - halfHorizontalFOV, &cameraPosition);
-	Vec3::rotX(&frustumTopSide, quarterPi, &cameraPosition);
+	Vec3::rotX(&frustumTopSide, quarterPi, &cameraPosition); //45 degrees, so don't need any special arithmetic
 	Vec3::rotX(&frustumBottomSide, -quarterPi, &cameraPosition);
 
 	Vec3::rot(&frustumLeftSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
@@ -101,13 +101,13 @@ void Renderer::setFrustum()
 void Renderer::updateCamera()
 {
 	//update thetas for each rotation axis
-	cosineTheta.x = cos(cameraRotation.x);
-	cosineTheta.y = cos(cameraRotation.y);
-	cosineTheta.z = cos(cameraRotation.z);
+	inverseCosineTheta.x = cos(-cameraRotation.x);
+	inverseCosineTheta.y = cos(-cameraRotation.y);
+	inverseCosineTheta.z = cos(-cameraRotation.z);
 
-	sineTheta.x = sin(cameraRotation.x);
-	sineTheta.y = sin(cameraRotation.y);
-	sineTheta.z = sin(cameraRotation.z);
+	inverseSineTheta.x = sin(-cameraRotation.x);
+	inverseSineTheta.y = sin(-cameraRotation.y);
+	inverseSineTheta.z = sin(-cameraRotation.z);
 
 	setFrustum();
 }
@@ -190,7 +190,6 @@ void Renderer::render()
 	rotateWorldToCamera();
 	perspectiveCorrectWorld();
 	screenspaceTransformWorld();
-	
 	drawWorldAsPoints();
 	drawList.clear();
 

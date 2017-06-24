@@ -6,19 +6,15 @@
 extern const int SCREEN_WIDTH;
 extern const int SCREEN_HEIGHT;
 
-
-
 class Renderer {
 	private:
 		Vec3 cameraPosition = { 0.0f, 0.0f, 0.0f };
 		Vec3 cameraRotation = { 0.0f, 0.0f, 0.0f };
 
 		Vec3 cameraLookAt = { 0.0f, 0.0f, 1.0f };
-		/*Vec3 cameraHorizontalPerpendicular = { 0.0f, 0.0f, 1.0f };
-		Vec3 cameraVerticalPerpendicular = { 0.0f, 1.0f, 0.0f };*/
 
-		Vec3 cosineTheta = { 1.0f, 1.0f, 1.0f };
-		Vec3 sineTheta = { 0.0f, 0.0f, 0.0f };
+		Vec3 inverseCosineTheta = { 1.0f, 1.0f, 1.0f };
+		Vec3 inverseSineTheta = { 0.0f, 0.0f, 0.0f };
 
 		const float nearPlane = 0.1f;
 		Vec3 frustumLeftSide;
@@ -26,13 +22,8 @@ class Renderer {
 		Vec3 frustumTopSide;
 		Vec3 frustumBottomSide;
 
-		//float horizontalFOVInRadians; //still need this stuff? sticking to 90 degree FOV?
-		//float verticalFOVInRadians;
-		//float halfHorizontalFOVTangent; //calculated in constructor and change of FOV
-		//float halfVerticalFOVTangent; 
-
-		std::vector<Vec3> vertsToRender;// = std::vector<Vec3>(100);
-		std::vector<Vec3> drawList;// = std::vector<Vec3*>(100);
+		std::vector<Vec3> vertsToRender;
+		std::vector<Vec3> drawList;
 
 		bool isInsideFrustum(Vec3 * vertToCheck);
 		void frustumCullVerts();
