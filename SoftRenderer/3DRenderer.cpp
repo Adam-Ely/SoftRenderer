@@ -78,17 +78,20 @@ void Renderer::drawWorldAsPoints()
 void Renderer::setFrustum()
 {
 	//hacks that assume 90 degree vertical FOV and 3:4 aspect ratio
-	float halfHorizontalFOV = atan(3.0f / 4.0f);
+	float halfHorizontalFOV = atan(4.0f / 3.0f);
 	float quarterPi = (float)M_PI / 4.0f;
+	float halfPi = (float)M_PI / 2.0f;
 	frustumLeftSide = { 0.0f, 0.0f, 1.0f };
 	frustumRightSide = { 0.0f, 0.0f, 1.0f };;
 	frustumTopSide = { 0.0f, 0.0f, 1.0f };;
 	frustumBottomSide = { 0.0f, 0.0f, 1.0f };;
 
-	Vec3::rotY(&frustumLeftSide, -halfHorizontalFOV, &cameraPosition);
-	Vec3::rotY(&frustumRightSide, halfHorizontalFOV, &cameraPosition);
-	Vec3::rotX(&frustumTopSide, -quarterPi, &cameraPosition);
-	Vec3::rotX(&frustumBottomSide, quarterPi, &cameraPosition);
+
+
+	Vec3::rotY(&frustumLeftSide, - (halfPi - halfHorizontalFOV), &cameraPosition);
+	Vec3::rotY(&frustumRightSide,  halfPi - halfHorizontalFOV, &cameraPosition);
+	Vec3::rotX(&frustumTopSide, quarterPi, &cameraPosition);
+	Vec3::rotX(&frustumBottomSide, -quarterPi, &cameraPosition);
 
 	Vec3::rot(&frustumLeftSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
 	Vec3::rot(&frustumRightSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
