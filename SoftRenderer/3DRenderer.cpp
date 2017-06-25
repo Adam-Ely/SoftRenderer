@@ -90,8 +90,8 @@ void Renderer::setFrustum()
 
 	Vec3::rotY(&frustumLeftSide, - (halfPi - halfHorizontalFOV), &cameraPosition);
 	Vec3::rotY(&frustumRightSide,  halfPi - halfHorizontalFOV, &cameraPosition);
-	Vec3::rotX(&frustumTopSide, quarterPi, &cameraPosition); //45 degrees, so don't need any special arithmetic
-	Vec3::rotX(&frustumBottomSide, -quarterPi, &cameraPosition);
+	Vec3::rotX(&frustumTopSide, -quarterPi, &cameraPosition); //45 degrees, so don't need any special arithmetic
+	Vec3::rotX(&frustumBottomSide, quarterPi, &cameraPosition);
 
 	Vec3::rot(&frustumLeftSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
 	Vec3::rot(&frustumRightSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
@@ -152,8 +152,8 @@ Vec3 Renderer::screenspaceTransform(Vec3 *input)
 
 	Vec3 output;
 
-	output.x = ((float)SCREEN_WIDTH / 2.0f) + (input->x * (safeLength / 2.0f));
-	output.y = ((float)SCREEN_HEIGHT / 2.0f) + (input->y * (safeLength / 2.0f));
+	output.x = floor(((float)SCREEN_WIDTH / 2.0f) + (input->x * (safeLength / 2.0f)));
+	output.y = floor(((float)SCREEN_HEIGHT / 2.0f) - (input->y * (safeLength / 2.0f)));
 
 	output.z = input->z;
 

@@ -136,8 +136,8 @@ int main( int argc, char* args[] )
 
 				renderer.render();
 
-				angle += 0.001f;
-				renderer.setCameraRotation(0.0f, angle, 0.0f);
+				angle += 0.0001f;
+				renderer.setCameraRotation(angle, 0.0f, 0.0f);
 
 				SDL_RenderPresent(gRenderer);
 
