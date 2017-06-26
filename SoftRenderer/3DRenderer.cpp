@@ -82,9 +82,9 @@ void Renderer::setFrustum()
 	float quarterPi = (float)M_PI / 4.0f;
 	float halfPi = (float)M_PI / 2.0f;
 	frustumLeftSide = { 0.0f, 0.0f, 1.0f };
-	frustumRightSide = { 0.0f, 0.0f, 1.0f };;
-	frustumTopSide = { 0.0f, 0.0f, 1.0f };;
-	frustumBottomSide = { 0.0f, 0.0f, 1.0f };;
+	frustumRightSide = { 0.0f, 0.0f, 1.0f };
+	frustumTopSide = { 0.0f, 0.0f, 1.0f };
+	frustumBottomSide = { 0.0f, 0.0f, 1.0f };
 
 
 
