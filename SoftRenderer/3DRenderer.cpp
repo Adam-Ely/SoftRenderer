@@ -51,7 +51,7 @@ void Renderer::rotateWorldToCamera()
 {
 	for (auto it = std::begin(drawList); it != std::end(drawList); ++it)
 	{
-		Vec3::dotRotate(&(*it), &inverseSineTheta, &inverseCosineTheta, &cameraPosition);
+		Vec3::reverseDotRotate(&(*it), &inverseSineTheta, &inverseCosineTheta, &cameraPosition);
 	}
 }
 void Renderer::screenspaceTransformWorld()

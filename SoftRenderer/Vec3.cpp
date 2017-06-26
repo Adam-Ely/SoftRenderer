@@ -87,6 +87,35 @@ void Vec3::dotRotate(Vec3 * vertex, Vec3 * sineAngle, Vec3 * cosineAngle, Vec3 *
 
 	Vec3 temp = { vertex->x, vertex->y, vertex->z };
 
+	vertex->z = (temp.z * cosineAngle->x) + (temp.y * -sineAngle->x);
+	vertex->y = (temp.z * sineAngle->x) + (temp.y * cosineAngle->x);
+
+	temp = { vertex->x, vertex->y, vertex->z };
+
+	vertex->x = (temp.x * cosineAngle->y) + (temp.z * -sineAngle->y);
+	vertex->z = (temp.x * sineAngle->y) + (temp.z * cosineAngle->y);
+
+	temp = { vertex->x, vertex->y, vertex->z };
+
+	vertex->x = (temp.x * cosineAngle->z) + (temp.y * -sineAngle->z);
+	vertex->y = (temp.x * sineAngle->z) + (temp.y * cosineAngle->z);
+
+	vertex->x = vertex->x + origin->x;
+	vertex->y = vertex->y + origin->y;
+	vertex->z = vertex->z + origin->z;
+
+	return;
+}
+
+void Vec3::reverseDotRotate(Vec3 * vertex, Vec3 * sineAngle, Vec3 * cosineAngle, Vec3 * origin)
+{
+
+	vertex->x -= origin->x;
+	vertex->y -= origin->y;
+	vertex->z -= origin->z;
+
+	Vec3 temp = { vertex->x, vertex->y, vertex->z };
+
 	vertex->x = (temp.x * cosineAngle->z) + (temp.y * -sineAngle->z);
 	vertex->y = (temp.x * sineAngle->z) + (temp.y * cosineAngle->z);
 
