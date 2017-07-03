@@ -46,6 +46,14 @@ void Renderer::frustumCullVerts()
 			drawList.push_back(*it);
 		}
 	}
+
+	for (auto it = std::begin(transformedModelVerts); it != std::end(transformedModelVerts); ++it)
+	{
+		if (isInsideFrustum(&(*it)))
+		{
+			drawList.push_back(*it);
+		}
+	}
 }
 void Renderer::rotateWorldToCamera()
 {
@@ -110,6 +118,38 @@ void Renderer::updateCamera()
 	inverseSineTheta.z = sin(-cameraRotation.z);
 
 	setFrustum();
+}
+void Renderer::transformModels()
+{
+	Vec3 sineTheta, cosineTheta;
+	
+	for (auto modelIt = std::begin(modelsToRender); modelIt != std::end(modelsToRender); ++modelIt)//loop through models
+	{
+		modelIt->rotation.x = modelIt->rotation.x + modelIt->rotationVelocity.x;
+		modelIt->rotation.y = modelIt->rotation.y + modelIt->rotationVelocity.y;
+		modelIt->rotation.z = modelIt->rotation.z + modelIt->rotationVelocity.z;
+		
+		sineTheta.x = sin(modelIt->rotation.x);
+		sineTheta.y = sin(modelIt->rotation.y);
+		sineTheta.z = sin(modelIt->rotation.z);
+
+		cosineTheta.x = cos(modelIt->rotation.x);
+		cosineTheta.y = cos(modelIt->rotation.y);
+		cosineTheta.z = cos(modelIt->rotation.z);
+		
+		for (auto vertIt = std::begin( *(modelIt->getVerts())); //from the model iterator, get pointer to its vertex buffer and create iterator to first element of said buffer
+			vertIt != std::end(*(modelIt->getVerts())); //as above, except the ending iterator
+			++vertIt)
+		{
+			Vec3 vert = { vertIt->x + modelIt->position.x,
+				vertIt->y + modelIt->position.y,
+				vertIt->z + modelIt->position.z };//transform verts according to model position and rotation
+
+			Vec3::dotRotate(&vert, &sineTheta, &cosineTheta, &(modelIt->position));
+
+			transformedModelVerts.push_back(vert);
+		}
+	}
 }
 
 //public
@@ -178,15 +218,30 @@ void Renderer::setCameraRotation(float xRotationInRadians, float yRotationInRadi
 }
 void Renderer::addVert(Vec3 * vertToRender)
 {
-	Vec3 newVert = { vertToRender->x, vertToRender->y, vertToRender->z };
+	Vec3 newVert = { vertToRender->x, vertToRender->y, vertToRender->z }; //
 
 	vertsToRender.push_back(newVert);
 	return;
 }
+void Renderer::addModel(Model * modelToRender)
+{
+	Model newModel;
+	
+	newModel.position = modelToRender->position;
+	newModel.rotation = modelToRender->rotation;
+	newModel.vertices = modelToRender->vertices;
+	newModel.rotationVelocity = modelToRender->rotationVelocity;
+
+	modelsToRender.push_back(newModel);
+	return;
+}
+
 void Renderer::render()
 {
 	updateCamera();
+	transformModels();
 	frustumCullVerts();
+	transformedModelVerts.clear();
 	rotateWorldToCamera();
 	perspectiveCorrectWorld();
 	screenspaceTransformWorld();
