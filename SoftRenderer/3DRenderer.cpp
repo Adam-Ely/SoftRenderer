@@ -1,12 +1,168 @@
 #include "3DRenderer.h"
 #include <algorithm>
+#include <math.h>
 
-Vec3 perspectiveTransform(Vec3 *input)
+//private
+
+bool Renderer::isInsideFrustum(Vec3 * vertToCheck)
 {
-	//this assumes a camera FOV of 90 degrees
+	bool output = true;
+
+	Vec3 translatedVert;
+	translatedVert.x = vertToCheck->x - cameraPosition.x;
+	translatedVert.y = vertToCheck->y - cameraPosition.y;
+	translatedVert.z = vertToCheck->z - cameraPosition.z;
+
+	//cull verts behind near plane
+	if ((Vec3::dotProduct(&translatedVert, &cameraLookAt)) - nearPlane < 0.0f)
+	{
+		output = false;
+	}
+	else if (Vec3::dotProduct(&translatedVert, &frustumLeftSide) < 0.0f)
+	{
+		output = false;
+	}
+	else if (Vec3::dotProduct(&translatedVert, &frustumRightSide) < 0.0f)
+	{
+		output = false;
+	}
+	else if (Vec3::dotProduct(&translatedVert, &frustumTopSide) < 0.0f)
+	{
+		output = false;
+	}
+	else if (Vec3::dotProduct(&translatedVert, &frustumBottomSide) < 0.0f)
+	{
+		output = false;
+	}
+
+	return output;
+}
+void Renderer::frustumCullVerts()
+{
+	for (auto it = std::begin(vertsToRender); it != std::end(vertsToRender); ++it)
+	{
+		if (isInsideFrustum(&(*it)))//address of the Vec3 pointed to by the iterator (would look a lot nicer if I just used a for loop)
+		{
+			drawList.push_back(*it);
+		}
+	}
+
+	for (auto it = std::begin(transformedModelVerts); it != std::end(transformedModelVerts); ++it)
+	{
+		if (isInsideFrustum(&(*it)))
+		{
+			drawList.push_back(*it);
+		}
+	}
+}
+void Renderer::rotateWorldToCamera()
+{
+	for (auto it = std::begin(drawList); it != std::end(drawList); ++it)
+	{
+		Vec3::reverseDotRotate(&(*it), &inverseSineTheta, &inverseCosineTheta, &cameraPosition);
+	}
+}
+void Renderer::screenspaceTransformWorld()
+{
+	for (auto it = std::begin(drawList); it != std::end(drawList); ++it)
+	{
+		*it = screenspaceTransform(&(*it));
+	}
+}
+void Renderer::perspectiveCorrectWorld()
+{
+	for (auto it = std::begin(drawList); it != std::end(drawList); ++it)
+	{
+		*it = perspectiveTransform(&(*it));
+	}
+}
+void Renderer::drawWorldAsPoints()
+{
+	for (auto it = std::begin(drawList); it != std::end(drawList); ++it)
+	{
+		drawPoint(&(*it));
+	}
+}
+void Renderer::setFrustum()
+{
+	//hacks that assume 90 degree vertical FOV and 3:4 aspect ratio
+	float halfHorizontalFOV = atan(4.0f / 3.0f);
+	float quarterPi = (float)M_PI / 4.0f;
+	float halfPi = (float)M_PI / 2.0f;
+	frustumLeftSide = { 0.0f, 0.0f, 1.0f };
+	frustumRightSide = { 0.0f, 0.0f, 1.0f };
+	frustumTopSide = { 0.0f, 0.0f, 1.0f };
+	frustumBottomSide = { 0.0f, 0.0f, 1.0f };
+
+
+
+	Vec3::rotY(&frustumLeftSide, - (halfPi - halfHorizontalFOV), &cameraPosition);
+	Vec3::rotY(&frustumRightSide,  halfPi - halfHorizontalFOV, &cameraPosition);
+	Vec3::rotX(&frustumTopSide, -quarterPi, &cameraPosition); //45 degrees, so don't need any special arithmetic
+	Vec3::rotX(&frustumBottomSide, quarterPi, &cameraPosition);
+
+	Vec3::rot(&frustumLeftSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
+	Vec3::rot(&frustumRightSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
+	Vec3::rot(&frustumTopSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
+	Vec3::rot(&frustumBottomSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
+}
+void Renderer::updateCamera()
+{
+	//update thetas for each rotation axis
+	inverseCosineTheta.x = cos(-cameraRotation.x);
+	inverseCosineTheta.y = cos(-cameraRotation.y);
+	inverseCosineTheta.z = cos(-cameraRotation.z);
+
+	inverseSineTheta.x = sin(-cameraRotation.x);
+	inverseSineTheta.y = sin(-cameraRotation.y);
+	inverseSineTheta.z = sin(-cameraRotation.z);
+
+	setFrustum();
+}
+void Renderer::transformModels()
+{
+	Vec3 sineTheta, cosineTheta;
+	
+	for (auto modelIt = std::begin(modelsToRender); modelIt != std::end(modelsToRender); ++modelIt)//loop through models
+	{
+		modelIt->rotation.x = modelIt->rotation.x + modelIt->rotationVelocity.x;
+		modelIt->rotation.y = modelIt->rotation.y + modelIt->rotationVelocity.y;
+		modelIt->rotation.z = modelIt->rotation.z + modelIt->rotationVelocity.z;
+		
+		sineTheta.x = sin(modelIt->rotation.x);
+		sineTheta.y = sin(modelIt->rotation.y);
+		sineTheta.z = sin(modelIt->rotation.z);
+
+		cosineTheta.x = cos(modelIt->rotation.x);
+		cosineTheta.y = cos(modelIt->rotation.y);
+		cosineTheta.z = cos(modelIt->rotation.z);
+		
+		for (auto vertIt = std::begin( *(modelIt->getVerts())); //from the model iterator, get pointer to its vertex buffer and create iterator to first element of said buffer
+			vertIt != std::end(*(modelIt->getVerts())); //as above, except the ending iterator
+			++vertIt)
+		{
+			Vec3 vert = { vertIt->x + modelIt->position.x,
+				vertIt->y + modelIt->position.y,
+				vertIt->z + modelIt->position.z };//transform verts according to model position and rotation
+
+			Vec3::dotRotate(&vert, &sineTheta, &cosineTheta, &(modelIt->position));
+
+			transformedModelVerts.push_back(vert);
+		}
+	}
+}
+
+//public
+Renderer::Renderer()
+{
+	setFrustum();
+}
+Vec3 Renderer::perspectiveTransform(Vec3 *input)
+{
+	//assumes a camera FOV of 90 degrees
 	Vec3 output;
 
-	if (input->z == 0.0f)
+	if (input->z == 0.0f)//this should never happen with near-plane culling
 	{
 		output.x = input->x;
 		output.y = input->y;
@@ -15,27 +171,82 @@ Vec3 perspectiveTransform(Vec3 *input)
 		return output;
 	}
 
-	//fake camera fuckery
-	output.x = input->x / input->z;
-	output.y = input->y / input->z;
+output.x = input->x / input->z;
+output.y = input->y / input->z;
+output.z = input->z;
+
+return output;
+
+////adjustable fov beginnings. Abandoned for now. Need to disable aspect ratio correction in screenspaceTransform to have this
+//Vec3 output;
+
+//output.x = input->x / (halfHorizontalFOVTangent * input->z);
+//output.y = input->y / (halfVerticalFOVTangent * input->z);
+//output.z = input->z;
+
+//return output;
+}
+Vec3 Renderer::screenspaceTransform(Vec3 *input)
+{
+	float safeLength = (float)std::min(SCREEN_WIDTH, SCREEN_HEIGHT) - 1.0f;
+
+	Vec3 output;
+
+	output.x = floor(((float)SCREEN_WIDTH / 2.0f) + (input->x * (safeLength / 2.0f)));
+	output.y = floor(((float)SCREEN_HEIGHT / 2.0f) - (input->y * (safeLength / 2.0f)));
+
 	output.z = input->z;
 
 	return output;
 }
-
-Vec3 screenspaceTransform(Vec3 *input)
+void Renderer::setCameraRotation(Vec3 * rotationInRadians)
 {
-	float safeLength = (float)std::min(SCREEN_WIDTH, SCREEN_HEIGHT) - 1.0f;
+	setCameraRotation(rotationInRadians->x, rotationInRadians->y, rotationInRadians->z);
+}
+void Renderer::setCameraRotation(float xRotationInRadians, float yRotationInRadians, float zRotationInRadians)
+{
+	cameraRotation.x = xRotationInRadians;
+	cameraRotation.y = yRotationInRadians;
+	cameraRotation.z = zRotationInRadians;
+
+	//calculate new lookat (rotate neutral unit vector by new angles)
+
+	cameraLookAt = { 0.0f, 0.0f, 1.0f };
+	Vec3::rot(&cameraLookAt, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
+
+	return;
+}
+void Renderer::addVert(Vec3 * vertToRender)
+{
+	Vec3 newVert = { vertToRender->x, vertToRender->y, vertToRender->z }; //
+
+	vertsToRender.push_back(newVert);
+	return;
+}
+void Renderer::addModel(Model * modelToRender)
+{
+	Model newModel;
 	
-	Vec3 output;
+	newModel.position = modelToRender->position;
+	newModel.rotation = modelToRender->rotation;
+	newModel.vertices = modelToRender->vertices;
+	newModel.rotationVelocity = modelToRender->rotationVelocity;
 
-	/*output.x = (input->x + 1.0f) * ((float)SCREEN_WIDTH / 2.0f);
-	output.y = (input->y + 0.75f) * ((float)SCREEN_HEIGHT / 1.5f);*/
+	modelsToRender.push_back(newModel);
+	return;
+}
 
-	output.x = ((float)SCREEN_WIDTH / 2.0f) + (input->x * (safeLength / 2.0f));
-	output.y = ((float)SCREEN_HEIGHT / 2.0f) + (input->y * (safeLength / 2.0f));
+void Renderer::render()
+{
+	updateCamera();
+	transformModels();
+	frustumCullVerts();
+	transformedModelVerts.clear();
+	rotateWorldToCamera();
+	perspectiveCorrectWorld();
+	screenspaceTransformWorld();
+	drawWorldAsPoints();
+	drawList.clear();
 
-	output.z = input->z;
-
-	return output;
+	return;
 }
