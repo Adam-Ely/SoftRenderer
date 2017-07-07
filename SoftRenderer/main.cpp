@@ -115,9 +115,9 @@ int main(int argc, char* args[])
 	}
 
 	marioModel.vertices = &marioVerts;
-	marioModel.position = { 0.0f, -150.0f, 250.0f };
-	marioModel.rotation = { 0.0f, 0.0f, 0.0f };
-	marioModel.rotationVelocity = { 0.0f, 0.01f, 0.0f };
+	marioModel.m_position = { 0.0f, -150.0f, 250.0f };
+	marioModel.m_rotation = { 0.0f, 0.0f, 0.0f };
+	marioModel.m_rotationVelocity = { 0.0f, 0.01f, 0.0f };
 
 	renderer.addModel(marioModel);
 	

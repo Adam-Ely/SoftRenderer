@@ -9,24 +9,24 @@ extern const int SCREEN_HEIGHT;
 
 class Renderer {
 	private:
-		Vec3 cameraPosition = { 0.0f, 0.0f, 0.0f };
-		Vec3 cameraRotation = { 0.0f, 0.0f, 0.0f };
+		Vec3 m_cameraPosition = { 0.0f, 0.0f, 0.0f };
+		Vec3 m_cameraRotation = { 0.0f, 0.0f, 0.0f };
 
-		Vec3 cameraLookAt = { 0.0f, 0.0f, 1.0f };
+		Vec3 m_cameraLookAt = { 0.0f, 0.0f, 1.0f };
 
-		Vec3 inverseCosineTheta = { 1.0f, 1.0f, 1.0f };
-		Vec3 inverseSineTheta = { 0.0f, 0.0f, 0.0f };
+		Vec3 m_inverseCosineTheta = { 1.0f, 1.0f, 1.0f };
+		Vec3 m_inverseSineTheta = { 0.0f, 0.0f, 0.0f };
 
-		const float nearPlane = 0.1f;
-		Vec3 frustumLeftSide;
-		Vec3 frustumRightSide;
-		Vec3 frustumTopSide;
-		Vec3 frustumBottomSide;
+		const float m_nearPlane = 0.1f;
+		Vec3 m_frustumLeftSide;
+		Vec3 m_frustumRightSide;
+		Vec3 m_frustumTopSide;
+		Vec3 m_frustumBottomSide;
 
-		std::vector<Vec3> vertsToRender;
-		std::vector<Vec3> transformedModelVerts;
-		std::vector<Vec3> drawList;
-		std::vector<Model> modelsToRender;
+		std::vector<Vec3> m_vertsToRender;
+		std::vector<Vec3> m_transformedModelVerts;
+		std::vector<Vec3> m_drawList;
+		std::vector<Model> m_modelsToRender;
 
 		bool isInsideFrustum(const Vec3 &vertToCheck);
 		void frustumCullVerts();
