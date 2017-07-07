@@ -14,23 +14,23 @@ bool Renderer::isInsideFrustum(Vec3 * vertToCheck)
 	translatedVert.z = vertToCheck->z - cameraPosition.z;
 
 	//cull verts behind near plane
-	if ((Vec3::dotProduct(&translatedVert, &cameraLookAt)) - nearPlane < 0.0f)
+	if ((Vec3::dotProduct(translatedVert, cameraLookAt)) - nearPlane < 0.0f)
 	{
 		output = false;
 	}
-	else if (Vec3::dotProduct(&translatedVert, &frustumLeftSide) < 0.0f)
+	else if (Vec3::dotProduct(translatedVert, frustumLeftSide) < 0.0f)
 	{
 		output = false;
 	}
-	else if (Vec3::dotProduct(&translatedVert, &frustumRightSide) < 0.0f)
+	else if (Vec3::dotProduct(translatedVert, frustumRightSide) < 0.0f)
 	{
 		output = false;
 	}
-	else if (Vec3::dotProduct(&translatedVert, &frustumTopSide) < 0.0f)
+	else if (Vec3::dotProduct(translatedVert, frustumTopSide) < 0.0f)
 	{
 		output = false;
 	}
-	else if (Vec3::dotProduct(&translatedVert, &frustumBottomSide) < 0.0f)
+	else if (Vec3::dotProduct(translatedVert, frustumBottomSide) < 0.0f)
 	{
 		output = false;
 	}
@@ -59,7 +59,7 @@ void Renderer::rotateWorldToCamera()
 {
 	for (auto it = std::begin(drawList); it != std::end(drawList); ++it)
 	{
-		Vec3::reverseDotRotate(&(*it), &inverseSineTheta, &inverseCosineTheta, &cameraPosition);
+		Vec3::reverseDotRotate(*it, inverseSineTheta, inverseCosineTheta, cameraPosition);
 	}
 }
 void Renderer::screenspaceTransformWorld()
@@ -96,15 +96,15 @@ void Renderer::setFrustum()
 
 
 
-	Vec3::rotY(&frustumLeftSide, - (halfPi - halfHorizontalFOV), &cameraPosition);
-	Vec3::rotY(&frustumRightSide,  halfPi - halfHorizontalFOV, &cameraPosition);
-	Vec3::rotX(&frustumTopSide, -quarterPi, &cameraPosition); //45 degrees, so don't need any special arithmetic
-	Vec3::rotX(&frustumBottomSide, quarterPi, &cameraPosition);
+	Vec3::rotY(frustumLeftSide, - (halfPi - halfHorizontalFOV), cameraPosition);
+	Vec3::rotY(frustumRightSide,  halfPi - halfHorizontalFOV, cameraPosition);
+	Vec3::rotX(frustumTopSide, -quarterPi, cameraPosition); //45 degrees, so don't need any special arithmetic
+	Vec3::rotX(frustumBottomSide, quarterPi, cameraPosition);
 
-	Vec3::rot(&frustumLeftSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
-	Vec3::rot(&frustumRightSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
-	Vec3::rot(&frustumTopSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
-	Vec3::rot(&frustumBottomSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
+	Vec3::rot(frustumLeftSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, cameraPosition);
+	Vec3::rot(frustumRightSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, cameraPosition);
+	Vec3::rot(frustumTopSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, cameraPosition);
+	Vec3::rot(frustumBottomSide, cameraRotation.x, cameraRotation.y, cameraRotation.z, cameraPosition);
 }
 void Renderer::updateCamera()
 {
@@ -145,7 +145,7 @@ void Renderer::transformModels()
 				vertIt->y + modelIt->position.y,
 				vertIt->z + modelIt->position.z };//transform verts according to model position and rotation
 
-			Vec3::dotRotate(&vert, &sineTheta, &cosineTheta, &(modelIt->position));
+			Vec3::dotRotate(vert, sineTheta, cosineTheta, modelIt->position);
 
 			transformedModelVerts.push_back(vert);
 		}
@@ -212,7 +212,7 @@ void Renderer::setCameraRotation(float xRotationInRadians, float yRotationInRadi
 	//calculate new lookat (rotate neutral unit vector by new angles)
 
 	cameraLookAt = { 0.0f, 0.0f, 1.0f };
-	Vec3::rot(&cameraLookAt, cameraRotation.x, cameraRotation.y, cameraRotation.z, &cameraPosition);
+	Vec3::rot(cameraLookAt, cameraRotation.x, cameraRotation.y, cameraRotation.z, cameraPosition);
 
 	return;
 }
