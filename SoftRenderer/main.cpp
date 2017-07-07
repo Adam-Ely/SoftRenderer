@@ -9,6 +9,7 @@ and may not be redistributed without written permission.*/
 #include "Vec3.h"
 #include <float.h>
 #include "3DRenderer.h"
+#include "Mario.h"
 
 float RandomFloat(float a, float b) {
 	float random = ((float)rand()) / (float)RAND_MAX;
@@ -36,8 +37,6 @@ SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 
 Renderer renderer;
-
-
 
 Model marioModel;
 
