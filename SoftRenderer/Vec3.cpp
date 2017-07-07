@@ -1,6 +1,39 @@
 #include "Vec3.h"
 #include <math.h>
 
+
+Vec3 Vec3::operator+=(const Vec3& v)
+{
+	this->x += v.x;
+	this->y += v.y;
+	this->z += v.z;
+	return *this;
+}
+Vec3 operator+(Vec3 lhs, const Vec3& rhs)
+{
+	lhs += rhs;
+	return lhs;
+}
+Vec3 Vec3::operator-=(const Vec3& v)
+{
+	this->x -= v.x;
+	this->y -= v.y;
+	this->z -= v.z;
+	return *this;
+}
+Vec3 operator-(Vec3& lhs, const Vec3& rhs)
+{
+	lhs -= rhs;
+	return lhs;
+}
+Vec3 Vec3::operator=(const Vec3& rhs) {
+	this->x = rhs.x;
+	this->y = rhs.y;
+	this->z = rhs.z;
+
+	return *this;
+}
+
 void Vec3::rot(float * first, float * second, float angle)
 {
 	float sine = sin(angle);

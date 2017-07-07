@@ -8,10 +8,7 @@ bool Renderer::isInsideFrustum(Vec3 * vertToCheck)
 {
 	bool output = true;
 
-	Vec3 translatedVert;
-	translatedVert.x = vertToCheck->x - cameraPosition.x;
-	translatedVert.y = vertToCheck->y - cameraPosition.y;
-	translatedVert.z = vertToCheck->z - cameraPosition.z;
+	Vec3 translatedVert = *vertToCheck - cameraPosition;
 
 	//cull verts behind near plane
 	if ((Vec3::dotProduct(translatedVert, cameraLookAt)) - nearPlane < 0.0f)
@@ -125,9 +122,7 @@ void Renderer::transformModels()
 	
 	for (auto modelIt = std::begin(modelsToRender); modelIt != std::end(modelsToRender); ++modelIt)//loop through models
 	{
-		modelIt->rotation.x = modelIt->rotation.x + modelIt->rotationVelocity.x;
-		modelIt->rotation.y = modelIt->rotation.y + modelIt->rotationVelocity.y;
-		modelIt->rotation.z = modelIt->rotation.z + modelIt->rotationVelocity.z;
+		modelIt->rotation += modelIt->rotationVelocity;
 		
 		sineTheta.x = sin(modelIt->rotation.x);
 		sineTheta.y = sin(modelIt->rotation.y);
@@ -141,9 +136,7 @@ void Renderer::transformModels()
 			vertIt != std::end(*(modelIt->getVerts())); //as above, except the ending iterator
 			++vertIt)
 		{
-			Vec3 vert = { vertIt->x + modelIt->position.x,
-				vertIt->y + modelIt->position.y,
-				vertIt->z + modelIt->position.z };//transform verts according to model position and rotation
+			Vec3 vert = *vertIt + modelIt->position;
 
 			Vec3::dotRotate(vert, sineTheta, cosineTheta, modelIt->position);
 
@@ -164,10 +157,7 @@ Vec3 Renderer::perspectiveTransform(Vec3 *input)
 
 	if (input->z == 0.0f)//this should never happen with near-plane culling
 	{
-		output.x = input->x;
-		output.y = input->y;
-		output.z = input->z;
-
+		output = *input;
 		return output;
 	}
 
@@ -205,12 +195,7 @@ void Renderer::setCameraRotation(Vec3 * rotationInRadians)
 }
 void Renderer::setCameraRotation(float xRotationInRadians, float yRotationInRadians, float zRotationInRadians)
 {
-	cameraRotation.x = xRotationInRadians;
-	cameraRotation.y = yRotationInRadians;
-	cameraRotation.z = zRotationInRadians;
-
-	//calculate new lookat (rotate neutral unit vector by new angles)
-
+	cameraRotation = { xRotationInRadians, yRotationInRadians, zRotationInRadians };		//calculate new lookat (rotate neutral unit vector by new angles)
 	cameraLookAt = { 0.0f, 0.0f, 1.0f };
 	Vec3::rot(cameraLookAt, cameraRotation.x, cameraRotation.y, cameraRotation.z, cameraPosition);
 
@@ -218,7 +203,7 @@ void Renderer::setCameraRotation(float xRotationInRadians, float yRotationInRadi
 }
 void Renderer::addVert(Vec3 * vertToRender)
 {
-	Vec3 newVert = { vertToRender->x, vertToRender->y, vertToRender->z }; //
+	Vec3 newVert = { vertToRender->x, vertToRender->y, vertToRender->z };
 
 	vertsToRender.push_back(newVert);
 	return;
