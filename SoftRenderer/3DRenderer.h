@@ -28,7 +28,7 @@ class Renderer {
 		std::vector<Vec3> drawList;
 		std::vector<Model> modelsToRender;
 
-		bool isInsideFrustum(Vec3 * vertToCheck);
+		bool isInsideFrustum(const Vec3 &vertToCheck);
 		void frustumCullVerts();
 		void rotateWorldToCamera();
 		void screenspaceTransformWorld();
@@ -40,11 +40,11 @@ class Renderer {
 
 	public:
 		Renderer();
-		static Vec3 perspectiveTransform(Vec3 *vertex);
-		static Vec3 screenspaceTransform(Vec3 *vertex);
+		static Vec3 perspectiveTransform(const Vec3 &vertex);
+		static Vec3 screenspaceTransform(const Vec3 &vertex);
 		void setCameraRotation(float xRotationInRadians, float yRotationInRadians, float zRotationInRadians);
-		void setCameraRotation(Vec3 * rotationInRadians);
-		void addVert(Vec3 * vertToRender);
-		void addModel(Model * modelToRender);
+		void setCameraRotation(const Vec3 & rotationInRadians);
+		void addVert(const Vec3 & vertToRender);
+		void addModel(Model & modelToRender);
 		void render();
 };

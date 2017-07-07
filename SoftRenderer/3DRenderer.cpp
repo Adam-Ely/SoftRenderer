@@ -4,11 +4,11 @@
 
 //private
 
-bool Renderer::isInsideFrustum(Vec3 * vertToCheck)
+bool Renderer::isInsideFrustum(const Vec3 & vertToCheck)
 {
 	bool output = true;
 
-	Vec3 translatedVert = *vertToCheck - cameraPosition;
+	Vec3 translatedVert = vertToCheck - cameraPosition;
 
 	//cull verts behind near plane
 	if ((Vec3::dotProduct(translatedVert, cameraLookAt)) - nearPlane < 0.0f)
@@ -38,7 +38,7 @@ void Renderer::frustumCullVerts()
 {
 	for (auto it = std::begin(vertsToRender); it != std::end(vertsToRender); ++it)
 	{
-		if (isInsideFrustum(&(*it)))//address of the Vec3 pointed to by the iterator (would look a lot nicer if I just used a for loop)
+		if (isInsideFrustum(*it))//address of the Vec3 pointed to by the iterator (would look a lot nicer if I just used a for loop)
 		{
 			drawList.push_back(*it);
 		}
@@ -46,7 +46,7 @@ void Renderer::frustumCullVerts()
 
 	for (auto it = std::begin(transformedModelVerts); it != std::end(transformedModelVerts); ++it)
 	{
-		if (isInsideFrustum(&(*it)))
+		if (isInsideFrustum(*it))
 		{
 			drawList.push_back(*it);
 		}
@@ -63,21 +63,21 @@ void Renderer::screenspaceTransformWorld()
 {
 	for (auto it = std::begin(drawList); it != std::end(drawList); ++it)
 	{
-		*it = screenspaceTransform(&(*it));
+		*it = screenspaceTransform(*it);
 	}
 }
 void Renderer::perspectiveCorrectWorld()
 {
 	for (auto it = std::begin(drawList); it != std::end(drawList); ++it)
 	{
-		*it = perspectiveTransform(&(*it));
+		*it = perspectiveTransform(*it);
 	}
 }
 void Renderer::drawWorldAsPoints()
 {
 	for (auto it = std::begin(drawList); it != std::end(drawList); ++it)
 	{
-		drawPoint(&(*it));
+		drawPoint(*it);
 	}
 }
 void Renderer::setFrustum()
@@ -150,20 +150,20 @@ Renderer::Renderer()
 {
 	setFrustum();
 }
-Vec3 Renderer::perspectiveTransform(Vec3 *input)
+Vec3 Renderer::perspectiveTransform(const Vec3 &input)
 {
 	//assumes a camera FOV of 90 degrees
 	Vec3 output;
 
-	if (input->z == 0.0f)//this should never happen with near-plane culling
+	if (input.z == 0.0f)//this should never happen with near-plane culling
 	{
-		output = *input;
+		output = input;
 		return output;
 	}
 
-output.x = input->x / input->z;
-output.y = input->y / input->z;
-output.z = input->z;
+output.x = input.x / input.z;
+output.y = input.y / input.z;
+output.z = input.z;
 
 return output;
 
@@ -176,22 +176,22 @@ return output;
 
 //return output;
 }
-Vec3 Renderer::screenspaceTransform(Vec3 *input)
+Vec3 Renderer::screenspaceTransform(const Vec3 &input)
 {
 	float safeLength = (float)std::min(SCREEN_WIDTH, SCREEN_HEIGHT) - 1.0f;
 
 	Vec3 output;
 
-	output.x = floor(((float)SCREEN_WIDTH / 2.0f) + (input->x * (safeLength / 2.0f)));
-	output.y = floor(((float)SCREEN_HEIGHT / 2.0f) - (input->y * (safeLength / 2.0f)));
+	output.x = floor(((float)SCREEN_WIDTH / 2.0f) + (input.x * (safeLength / 2.0f)));
+	output.y = floor(((float)SCREEN_HEIGHT / 2.0f) - (input.y * (safeLength / 2.0f)));
 
-	output.z = input->z;
+	output.z = input.z;
 
 	return output;
 }
-void Renderer::setCameraRotation(Vec3 * rotationInRadians)
+void Renderer::setCameraRotation(const Vec3 & rotationInRadians)
 {
-	setCameraRotation(rotationInRadians->x, rotationInRadians->y, rotationInRadians->z);
+	setCameraRotation(rotationInRadians.x, rotationInRadians.y, rotationInRadians.z);
 }
 void Renderer::setCameraRotation(float xRotationInRadians, float yRotationInRadians, float zRotationInRadians)
 {
@@ -201,23 +201,14 @@ void Renderer::setCameraRotation(float xRotationInRadians, float yRotationInRadi
 
 	return;
 }
-void Renderer::addVert(Vec3 * vertToRender)
+void Renderer::addVert(const Vec3 & vertToRender)
 {
-	Vec3 newVert = { vertToRender->x, vertToRender->y, vertToRender->z };
-
-	vertsToRender.push_back(newVert);
+	vertsToRender.push_back(vertToRender);
 	return;
 }
-void Renderer::addModel(Model * modelToRender)
+void Renderer::addModel(Model & modelToRender)
 {
-	Model newModel;
-	
-	newModel.position = modelToRender->position;
-	newModel.rotation = modelToRender->rotation;
-	newModel.vertices = modelToRender->vertices;
-	newModel.rotationVelocity = modelToRender->rotationVelocity;
-
-	modelsToRender.push_back(newModel);
+	modelsToRender.push_back(modelToRender);
 	return;
 }
 

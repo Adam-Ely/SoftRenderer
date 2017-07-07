@@ -7,9 +7,9 @@ void drawPoint(int x, int y)
 	myDraw::drawPoint(x, y);
 	return;
 }
-void drawPoint(Vec3 *point)
+void drawPoint(Vec3 &point)
 {
-	myDraw::drawPoint((int)round(point->x), (int)round(point->y));
+	myDraw::drawPoint((int)round(point.x), (int)round(point.y));
 	return;
 }
 void drawLine(int x1, int y1, int x2, int y2)
