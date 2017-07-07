@@ -21,7 +21,7 @@ Vec3 Vec3::operator-=(const Vec3& v)
 	this->z -= v.z;
 	return *this;
 }
-Vec3 operator-(Vec3& lhs, const Vec3& rhs)
+Vec3 operator-(Vec3 lhs, const Vec3& rhs)
 {
 	lhs -= rhs;
 	return lhs;
