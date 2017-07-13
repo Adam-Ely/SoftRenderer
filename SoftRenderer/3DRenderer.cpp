@@ -44,11 +44,19 @@ void Renderer::frustumCullVerts()
 		}
 	}
 
-	for (auto it = std::begin(m_transformedModelVerts); it != std::end(m_transformedModelVerts); ++it)
+	/*for (auto it = std::begin(m_transformedModelVerts); it != std::end(m_transformedModelVerts); ++it)
 	{
 		if (isInsideFrustum(*it))
 		{
 			m_drawList.push_back(*it);
+		}
+	}*/
+
+	for (auto modelIt = std::begin(m_modelsToRender); modelIt != std::end(m_modelsToRender); ++modelIt)//loop through models
+	{
+		if (isInsideFrustum(modelIt->m_position))
+		{
+			m_modelDrawList.push_back(*modelIt);
 		}
 	}
 }
@@ -116,31 +124,66 @@ void Renderer::updateCamera()
 
 	setFrustum();
 }
-void Renderer::transformModels()
+void Renderer::renderModels()
 {
+	//Vec3 newModelPosition;
 	Vec3 sineTheta, cosineTheta;
+	Vec3 newVertPosition;
+	unsigned int i = 0;
 	
+	//loop through models
 	for (auto modelIt = std::begin(m_modelsToRender); modelIt != std::end(m_modelsToRender); ++modelIt)//loop through models
 	{
 		modelIt->m_rotation += modelIt->m_rotationVelocity;
-		
-		sineTheta.x = sin(modelIt->m_rotation.x);
-		sineTheta.y = sin(modelIt->m_rotation.y);
-		sineTheta.z = sin(modelIt->m_rotation.z);
 
-		cosineTheta.x = cos(modelIt->m_rotation.x);
-		cosineTheta.y = cos(modelIt->m_rotation.y);
-		cosineTheta.z = cos(modelIt->m_rotation.z);
-		
-		for (auto vertIt = std::begin( *(modelIt->getVerts())); //from the model iterator, get pointer to its vertex buffer and create iterator to first element of said buffer
-			vertIt != std::end(*(modelIt->getVerts())); //as above, except the ending iterator
-			++vertIt)
+		sineTheta = {sin(modelIt->m_rotation.x), sin(modelIt->m_rotation.y), sin(modelIt->m_rotation.z) };
+		cosineTheta = { cos(modelIt->m_rotation.x), cos(modelIt->m_rotation.y), cos(modelIt->m_rotation.z) };
+		i = 0;
+		//loop through verts
+		for (auto vertIt = std::begin(*(modelIt->getVerts()));
+			vertIt != std::end(*(modelIt->getVerts()));
+			++vertIt, ++i)
 		{
-			Vec3 vert = *vertIt + modelIt->m_position;
+			newVertPosition = *vertIt + modelIt->m_position;
+			Vec3::dotRotate(newVertPosition, sineTheta, cosineTheta, modelIt->m_position);
 
-			Vec3::dotRotate(vert, sineTheta, cosineTheta, modelIt->m_position);
+			//rotateWorldToCamera
+			Vec3::reverseDotRotate(newVertPosition, m_inverseSineTheta, m_inverseCosineTheta, m_cameraPosition);
+			
+			//perspective correct vert
+			newVertPosition = perspectiveTransform(newVertPosition);
+			//screenspace transform vert
+			newVertPosition = screenspaceTransform(newVertPosition);
+			//push into vertBuffer
+			m_vertBuffer[i] = newVertPosition;
 
-			m_transformedModelVerts.push_back(vert);
+			//drawPoint(newVertPosition); //this is temporary, testing before edge-drawing
+		}
+		
+		for (auto indexIt = std::begin(*(modelIt->getIndexBuffer()));
+			indexIt != std::end(*(modelIt->getIndexBuffer()));
+			indexIt += 3)
+		{
+			Vec3 first, second;
+
+			//if indexIt + 2 is not a valid iterator throw exception
+
+			first = m_vertBuffer[*indexIt];
+			second = m_vertBuffer[*(indexIt + 1)];
+			
+			drawLine(first.x, first.y, second.x, second.y);
+
+			first = m_vertBuffer[*(indexIt + 1)];
+			second = m_vertBuffer[*(indexIt + 2)];
+
+			drawLine(first.x, first.y, second.x, second.y);
+
+			first = m_vertBuffer[*(indexIt + 2)];
+			second = m_vertBuffer[*indexIt];
+
+			drawLine(first.x, first.y, second.x, second.y);
+
+			//this will draw all three edges for every triangle, so there's a lot of redrawing.
 		}
 	}
 }
@@ -215,13 +258,12 @@ void Renderer::addModel(Model & modelToRender)
 void Renderer::render()
 {
 	updateCamera();
-	transformModels();
 	frustumCullVerts();
-	m_transformedModelVerts.clear();
-	rotateWorldToCamera();
-	perspectiveCorrectWorld();
-	screenspaceTransformWorld();
+	rotateWorldToCamera();			//render verts
+	perspectiveCorrectWorld();		//render verts
+	screenspaceTransformWorld();	//render verts
 	drawWorldAsPoints();
+	renderModels();
 	m_drawList.clear();
 
 	return;

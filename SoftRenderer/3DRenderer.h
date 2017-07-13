@@ -24,9 +24,11 @@ class Renderer {
 		Vec3 m_frustumBottomSide;
 
 		std::vector<Vec3> m_vertsToRender;
-		std::vector<Vec3> m_transformedModelVerts;
 		std::vector<Vec3> m_drawList;
 		std::vector<Model> m_modelsToRender;
+		std::vector<Model> m_modelDrawList;
+
+		std::vector<Vec3> m_vertBuffer = std::vector<Vec3>(1024);
 
 		bool isInsideFrustum(const Vec3 &vertToCheck);
 		void frustumCullVerts();
@@ -36,8 +38,7 @@ class Renderer {
 		void drawWorldAsPoints();
 		void updateCamera();
 		void setFrustum();
-		void transformModels();
-
+		void renderModels();
 	public:
 		Renderer();
 		static Vec3 perspectiveTransform(const Vec3 &vertex);

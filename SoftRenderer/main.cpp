@@ -114,10 +114,11 @@ int main(int argc, char* args[])
 		marioVerts.push_back(newVert);
 	}
 
-	marioModel.vertices = &marioVerts;
+	marioModel.m_vertices = &marioVerts;
+	marioModel.m_indexBuffer = &marioIndex;
 	marioModel.m_position = { 0.0f, -150.0f, 250.0f };
 	marioModel.m_rotation = { 0.0f, 0.0f, 0.0f };
-	marioModel.m_rotationVelocity = { 0.0f, 0.01f, 0.0f };
+	marioModel.m_rotationVelocity = { 0.0f, 0.001f, 0.0f };
 
 	renderer.addModel(marioModel);
 	

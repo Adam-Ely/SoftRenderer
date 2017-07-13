@@ -2,5 +2,10 @@
 
 std::vector<Vec3>* Model::getVerts()
 {
-	return vertices;
+	return m_vertices;
+}
+
+std::vector<unsigned int>* Model::getIndexBuffer()
+{
+	return m_indexBuffer;
 }
