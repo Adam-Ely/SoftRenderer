@@ -164,24 +164,23 @@ void Renderer::renderModels()
 			indexIt != std::end(*(modelIt->getIndexBuffer()));
 			indexIt += 3)
 		{
-			Vec3 first, second;
+			Vec3 first, second, third;
 
 			//if indexIt + 2 is not a valid iterator throw exception
 
-			first = m_vertBuffer[*indexIt];
-			second = m_vertBuffer[*(indexIt + 1)];
+			unsigned int firstIndex, secondIndex, thirdIndex;
+
+			firstIndex = *indexIt - 1;
+			secondIndex = *(indexIt + 1) -1;
+			thirdIndex = *(indexIt + 2) -1;
+
+			first = m_vertBuffer[firstIndex];
+			second = m_vertBuffer[secondIndex];
+			third = m_vertBuffer[thirdIndex];
 			
 			drawLine(first.x, first.y, second.x, second.y);
-
-			first = m_vertBuffer[*(indexIt + 1)];
-			second = m_vertBuffer[*(indexIt + 2)];
-
-			drawLine(first.x, first.y, second.x, second.y);
-
-			first = m_vertBuffer[*(indexIt + 2)];
-			second = m_vertBuffer[*indexIt];
-
-			drawLine(first.x, first.y, second.x, second.y);
+			drawLine(second.x, second.y, third.x, third.y);
+			drawLine(third.x, third.y, first.x, first.y);
 
 			//this will draw all three edges for every triangle, so there's a lot of redrawing.
 		}

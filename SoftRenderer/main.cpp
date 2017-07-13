@@ -50,14 +50,30 @@ Vec3 cubeOneBTR = { 1.0f, 1.0f, 1.0f };
 Vec3 cubeOneBBL = { -1.0f, -1.0f, 1.0f };
 Vec3 cubeOneBBR = { 1.0f, -1.0f, 1.0f };
 
-std::vector<Vec3> cubeVerts = {cubeOneFTL, 
-								cubeOneFTR,
-								cubeOneFBL,
-								cubeOneFBR,
-								cubeOneBTL,
-								cubeOneBTR,
-								cubeOneBBL,
-								cubeOneBBR};
+std::vector<Vec3> cubeVerts = {cubeOneFTL,	//0
+								cubeOneFTR,	//1
+								cubeOneFBL,	//2
+								cubeOneFBR,	//3
+								cubeOneBTL,	//4
+								cubeOneBTR,	//5
+								cubeOneBBL,	//6
+								cubeOneBBR};//7
+
+std::vector<unsigned int> cubeIndex =
+{
+	0, 1, 2, //front face
+	1, 3, 2,
+	0, 2, 6, //left face
+	0, 4, 6,
+	2, 3, 6, //bottom face
+	3, 7, 6,
+	1, 5, 3, //right face
+	5, 7, 3,
+	0, 1, 5, //top face
+	0, 4, 5,
+	6, 4, 5, //back face
+	5, 7, 6
+};
 
 bool init()
 {	
@@ -108,7 +124,7 @@ void close()
 int main(int argc, char* args[])
 {
 	std::vector<Vec3> marioVerts;
-	for (int i = 0; i < mario.size(); i += 3)
+	for (int i = 0; i <mario.size(); i += 3)
 	{
 		Vec3 newVert = { (float)mario[i], (float)mario[i+1], (float)mario[i+2] };
 		marioVerts.push_back(newVert);
@@ -118,9 +134,19 @@ int main(int argc, char* args[])
 	marioModel.m_indexBuffer = &marioIndex;
 	marioModel.m_position = { 0.0f, -150.0f, 250.0f };
 	marioModel.m_rotation = { 0.0f, 0.0f, 0.0f };
-	marioModel.m_rotationVelocity = { 0.0f, 0.001f, 0.0f };
+	marioModel.m_rotationVelocity = { 0.0f, 0.01f, 0.0f };
 
 	renderer.addModel(marioModel);
+
+	/*Model cube;
+
+	cube.m_vertices = &cubeVerts;
+	cube.m_indexBuffer = &cubeIndex;
+	cube.m_position = { 0.0f, 0.0f, 4.0f };
+	cube.m_rotation = { 0.0f, 0.0f, 0.0f };
+	cube.m_rotationVelocity = { 0.0f, 0.001f, 0.0f };
+
+	renderer.addModel(cube);*/
 	
 	//Start up SDL and create window
 	if (!init())
@@ -139,15 +165,6 @@ int main(int argc, char* args[])
 		float yAngle = 0.0f;
 		float angle = 0.0f;
 
-		//for (int i = 0; i < 100000; ++i)
-		//{
-		//	Vec3 vert = {RandomFloat(-2.0f, 2.0f),
-		//				RandomFloat(-2.0f, 2.0f),
-		//				RandomFloat(-2.0f, 2.0f)};
-
-			//	renderer.addVert(vert);
-
-			//}
 			/*renderer.addVert(&cubeOneFTL);
 			renderer.addVert(&cubeOneFTR);
 			renderer.addVert(&cubeOneFBL);
@@ -198,8 +215,8 @@ int main(int argc, char* args[])
 
 				renderer.render();
 
-				angle += 0.005f;
-				//renderer.setCameraRotation(angle, angle, 0.0f);
+				angle += 0.001f;
+				//renderer.setCameraRotation(0.0f, angle, 0.0f);
 
 				SDL_RenderPresent(gRenderer);
 
