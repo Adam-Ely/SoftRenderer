@@ -34,7 +34,7 @@ bool Renderer::isInsideFrustum(const Vec3 & vertToCheck)
 
 	return output;
 }
-void Renderer::frustumCullVerts()
+void Renderer::frustumCull()
 {
 	for (auto it = std::begin(m_vertsToRender); it != std::end(m_vertsToRender); ++it)
 	{
@@ -44,19 +44,11 @@ void Renderer::frustumCullVerts()
 		}
 	}
 
-	/*for (auto it = std::begin(m_transformedModelVerts); it != std::end(m_transformedModelVerts); ++it)
-	{
-		if (isInsideFrustum(*it))
-		{
-			m_drawList.push_back(*it);
-		}
-	}*/
-
 	for (auto modelIt = std::begin(m_modelsToRender); modelIt != std::end(m_modelsToRender); ++modelIt)//loop through models
 	{
 		if (isInsideFrustum(modelIt->m_position))
 		{
-			m_modelDrawList.push_back(*modelIt);
+			m_modelDrawList.push_back(&(*modelIt));
 		}
 	}
 }
@@ -132,20 +124,22 @@ void Renderer::renderModels()
 	unsigned int i = 0;
 	
 	//loop through models
-	for (auto modelIt = std::begin(m_modelsToRender); modelIt != std::end(m_modelsToRender); ++modelIt)//loop through models
+	for (auto modelIt = std::begin(m_modelDrawList); modelIt != std::end(m_modelDrawList); ++modelIt)//loop through models
 	{
-		modelIt->m_rotation += modelIt->m_rotationVelocity;
+		Model * currentModel = *modelIt;
+		
+		currentModel->m_rotation += currentModel->m_rotationVelocity;
 
-		sineTheta = {sin(modelIt->m_rotation.x), sin(modelIt->m_rotation.y), sin(modelIt->m_rotation.z) };
-		cosineTheta = { cos(modelIt->m_rotation.x), cos(modelIt->m_rotation.y), cos(modelIt->m_rotation.z) };
+		sineTheta = {sin(currentModel->m_rotation.x), sin(currentModel->m_rotation.y), sin(currentModel->m_rotation.z) };
+		cosineTheta = { cos(currentModel->m_rotation.x), cos(currentModel->m_rotation.y), cos(currentModel->m_rotation.z) };
 		i = 0;
 		//loop through verts
-		for (auto vertIt = std::begin(*(modelIt->getVerts()));
-			vertIt != std::end(*(modelIt->getVerts()));
+		for (auto vertIt = std::begin(*(currentModel->getVerts()));
+			vertIt != std::end(*(currentModel->getVerts()));
 			++vertIt, ++i)
 		{
-			newVertPosition = *vertIt + modelIt->m_position;
-			Vec3::dotRotate(newVertPosition, sineTheta, cosineTheta, modelIt->m_position);
+			newVertPosition = *vertIt + currentModel->m_position;
+			Vec3::dotRotate(newVertPosition, sineTheta, cosineTheta, currentModel->m_position);
 
 			//rotateWorldToCamera
 			Vec3::reverseDotRotate(newVertPosition, m_inverseSineTheta, m_inverseCosineTheta, m_cameraPosition);
@@ -160,8 +154,8 @@ void Renderer::renderModels()
 			//drawPoint(newVertPosition); //this is temporary, testing before edge-drawing
 		}
 		
-		for (auto indexIt = std::begin(*(modelIt->getIndexBuffer()));
-			indexIt != std::end(*(modelIt->getIndexBuffer()));
+		for (auto indexIt = std::begin(*(currentModel->getIndexBuffer()));
+			indexIt != std::end(*(currentModel->getIndexBuffer()));
 			indexIt += 3)
 		{
 			Vec3 first, second, third;
@@ -257,13 +251,14 @@ void Renderer::addModel(Model & modelToRender)
 void Renderer::render()
 {
 	updateCamera();
-	frustumCullVerts();
+	frustumCull();
 	rotateWorldToCamera();			//render verts
 	perspectiveCorrectWorld();		//render verts
 	screenspaceTransformWorld();	//render verts
 	drawWorldAsPoints();
 	renderModels();
 	m_drawList.clear();
+	m_modelDrawList.clear();
 
 	return;
 }

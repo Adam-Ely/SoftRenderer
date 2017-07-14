@@ -26,12 +26,12 @@ class Renderer {
 		std::vector<Vec3> m_vertsToRender;
 		std::vector<Vec3> m_drawList;
 		std::vector<Model> m_modelsToRender;
-		std::vector<Model> m_modelDrawList;
+		std::vector<Model*> m_modelDrawList;
 
 		std::vector<Vec3> m_vertBuffer = std::vector<Vec3>(1024);
 
 		bool isInsideFrustum(const Vec3 &vertToCheck);
-		void frustumCullVerts();
+		void frustumCull();
 		void rotateWorldToCamera();
 		void screenspaceTransformWorld();
 		void perspectiveCorrectWorld();

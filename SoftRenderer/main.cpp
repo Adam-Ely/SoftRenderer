@@ -134,9 +134,11 @@ int main(int argc, char* args[])
 	marioModel.m_indexBuffer = &marioIndex;
 	marioModel.m_position = { 0.0f, -150.0f, 250.0f };
 	marioModel.m_rotation = { 0.0f, 0.0f, 0.0f };
-	marioModel.m_rotationVelocity = { 0.0f, 0.01f, 0.0f };
+	marioModel.m_rotationVelocity = { 0.0f, 0.1f, 0.0f };
 
 	renderer.addModel(marioModel);
+
+	//renderer.setCameraRotation(0.0f, (float)M_PI, 0.0f);
 
 	/*Model cube;
 
@@ -215,8 +217,8 @@ int main(int argc, char* args[])
 
 				renderer.render();
 
-				angle += 0.001f;
-				//renderer.setCameraRotation(0.0f, angle, 0.0f);
+				angle += 0.01f;
+				renderer.setCameraRotation(0.0f, angle, 0.0f);
 
 				SDL_RenderPresent(gRenderer);
 
